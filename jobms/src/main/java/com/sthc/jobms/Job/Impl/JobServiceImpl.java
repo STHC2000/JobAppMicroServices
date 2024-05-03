@@ -3,7 +3,10 @@ package com.sthc.jobms.Job.Impl;
 import com.sthc.jobms.Job.Job;
 import com.sthc.jobms.Job.JobRepository;
 import com.sthc.jobms.Job.JobService;
+import com.sthc.jobms.Job.external.Company;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -19,7 +22,11 @@ public class JobServiceImpl implements JobService {
 
     @Override
     public List<Job> findAll() {
-        return jobRepository.findAll();
+        RestTemplate restTemplate = new RestTemplate();
+       Company company = restTemplate.getForObject("http://localhost:8081/companies/1", Company.class);
+       System.out.println("COMPANY NAME : " + company.getName());
+        System.out.println("COMPANY ID : " + company.getId());
+       return jobRepository.findAll();
     }
 
     @Override
