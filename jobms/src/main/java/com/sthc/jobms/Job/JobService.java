@@ -1,12 +1,14 @@
 package com.sthc.jobms.Job;
 
+import com.sthc.jobms.Job.dto.JobWithCompanydto;
+
 import java.util.List;
 
 public interface JobService {
-    List<Job> findAll();
+    List<JobWithCompanydto> findAll();
     void createJob(Job job);
 
-    Job getJobById(Long id);
+    JobWithCompanydto getJobById(Long id);
 
     boolean deleteById(Long id);
 
