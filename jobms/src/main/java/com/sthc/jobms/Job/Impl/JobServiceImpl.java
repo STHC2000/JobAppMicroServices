@@ -9,6 +9,8 @@ import com.sthc.jobms.Job.dto.JobDto;
 import com.sthc.jobms.Job.external.Company;
 import com.sthc.jobms.Job.external.Review;
 import com.sthc.jobms.Job.mapper.JobMapper;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
@@ -17,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -32,6 +35,8 @@ public class JobServiceImpl implements JobService {
     private CompanyClient companyClient;
     private ReviewClient reviewClient;
 
+    int attempt = 0;
+
     public JobServiceImpl(JobRepository jobRepository,CompanyClient companyClient,
                           ReviewClient reviewClient) {
         this.jobRepository = jobRepository;
@@ -40,13 +45,22 @@ public class JobServiceImpl implements JobService {
     }
 
     @Override
+//    @CircuitBreaker(name = "companyBreaker",fallbackMethod = "companyBreakerFallBack")
+    @Retry(name = "companyBreaker",fallbackMethod = "companyBreakerFallBack")
     public List<JobDto> findAll() {
+        System.out.println("Attemp number " + ++attempt);
         List<Job> jobs = jobRepository.findAll();
 //        List<JobDto> jobDtos = new ArrayList<>();
 
        return jobs.stream()
                .map(this::convertToDto)
                .collect(Collectors.toList());
+    }
+
+    public List<String> companyBreakerFallBack(Exception e){
+        List<String> list = new ArrayList<>();
+        list.add("Service is down");
+        return list;
     }
 
     private JobDto convertToDto(Job job){
